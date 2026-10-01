@@ -249,12 +249,22 @@ export function DesktopBody(props: DesktopBodyProps): ReactNode {
           <dt>{t('details.backend')}</dt><dd>{status?.backend ?? '—'}</dd>
           <dt>{t('details.display')}</dt><dd>{status?.display ?? '—'}</dd>
           <dt>{t('details.epoch')}</dt><dd>{status?.epoch ?? '—'}</dd>
+          <dt>{t('details.observed')}</dt><dd>{status?.observedAt ?? '—'}</dd>
+          <dt>{t('details.focus')}</dt><dd>{status?.focusedWindowId ?? '—'}</dd>
+          <dt>{t('details.heldKeys')}</dt><dd>{status?.input?.heldKeys.join(', ') || t('details.none')}</dd>
+          <dt>{t('details.heldButtons')}</dt><dd>{status?.input?.heldButtons.join(', ') || t('details.none')}</dd>
+          {status?.input?.lastAutoReleaseAt && <><dt>{t('details.autoReleased')}</dt><dd>{status.input.lastAutoReleaseAt}</dd></>}
         </dl>
         {status?.viewerUrl !== undefined && <p>{t('details.viewer')}</p>}
+        {status?.inspectionError && <p role="status">{status.inspectionError}</p>}
+        {status?.windows !== undefined && <div><strong>{t('windows.title', { count: status.windows.length })}</strong>
+          <ul>{status.windows.map(window => <li key={window.id}><code>{window.id}</code>{' · '}{window.title || t('windows.untitled')}{window.focused ? ` · ${t('windows.focused')}` : ''}{window.modal ? ` · ${t('windows.modal')}` : ''}</li>)}</ul>
+        </div>}
         {status?.applications !== undefined && <div>
           <strong>{t('apps.title', { count: status.applications.length })}</strong>
+          <p className={css.muted}>{t('apps.note')}</p>
           <ul>{status.applications.map(app => <li key={app.id}>
-            <code>{app.command}</code>{' · '}{t(app.running ? 'apps.running' : 'apps.exited')}
+            <code>{app.command}</code>{' · '}{t(app.running ? 'apps.running' : 'apps.exited')}{app.exitCode != null ? ` · ${t('apps.exitCode', { code: app.exitCode })}` : ''}
           </li>)}</ul>
         </div>}
       </details>

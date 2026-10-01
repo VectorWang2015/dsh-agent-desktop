@@ -1,6 +1,6 @@
 {
   "name": "dsh-agent-desktop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Host-native background graphical sessions for AI with a DSH sidebar monitor and explicit human takeover.",
   "type": "module",
   "license": "MIT",
@@ -25,14 +25,15 @@
     "scripts/setup-native.py", "scripts/setup-native.sh",
     "assets/icon.svg", "locale/en.json", "locale/zh.json",
     "cordis.patch.yml", "README.md", "USAGE.md", "LICENSE", "THIRD_PARTY_NOTICES.md",
-    "docs/architecture.md", "docs/validation.md", "docs/plugin-compliance.md",
+    "docs/architecture.md", "docs/validation.md", "docs/plugin-compliance.md", "docs/gui-pitfalls.md", "CHANGELOG.md",
     "examples/first-task.zh.md", "examples/desktop-demo.py"
   ],
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "vitest run && /usr/bin/python3 tests/worker_cleanup_test.py && /usr/bin/python3 tests/demo_test.py",
     "typecheck": "tsc -p tsconfig.host.json && tsc -p tsconfig.client.json",
-    "test:smoke": "DESKTOP_NATIVE_SMOKE=1 vitest run tests/native.smoke.test.ts",
+    "test:smoke": "DESKTOP_NATIVE_SMOKE=1 vitest run tests/native.smoke.test.ts tests/native-feedback.smoke.test.ts",
+    "test:worker": ".runtime/venv/bin/python -B -m unittest discover -s tests -p 'worker*_test.py'",
     "test:ide": "DESKTOP_VSCODE_SMOKE=1 vitest run tests/native-vscode.smoke.test.ts",
     "package:check": "node scripts/check-package.mjs",
     "check": "pnpm typecheck && pnpm test && pnpm build && pnpm package:check"

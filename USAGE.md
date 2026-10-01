@@ -1,6 +1,6 @@
 # 智能体桌面插件使用说明
 
-`dsh-agent-desktop` 0.1.0，针对 DSH 0.1.7-rc.2 和 Ubuntu 24.04 amd64 验证。
+`dsh-agent-desktop` 0.2.0，针对 DSH 0.1.7-rc.2 和 Ubuntu 24.04 amd64 验证。
 
 ## 这是什么
 
@@ -61,7 +61,7 @@ dsh plugin --profile web remove dsh-agent-desktop
 ```bash
 dsh plugin --profile web add 'github:VectorWang2015/dsh-agent-desktop#<commit>' --ignore-scripts
 # 或安装自己构建、校验过的 tarball
-dsh plugin --profile web add /absolute/path/to/dsh-agent-desktop-0.1.0.tgz
+dsh plugin --profile web add /absolute/path/to/dsh-agent-desktop-0.2.0.tgz
 ```
 
 Git 直装请保留 `--ignore-scripts`：pnpm 可能因为包中有开发用 `build` 命令而把 Git 包标记为需要构建，即使没有 prepare 钩子。这里已随 Git 提供构建产物，不需要授权该步骤。固定提交的 GitHub 包已用此方式验证入口和 locale 导出。
@@ -86,21 +86,27 @@ Git 直装请保留 `--ignore-scripts`：pnpm 可能因为包中有开发用 `bu
 
 ## AI 工具
 
-- `desktop_start`：启动本会话独立桌面；已有暂停/人工桌面不会因此恢复。
-- `desktop_status`：查看状态和当前 epoch。
-- `desktop_screenshot`：返回实际图像 attachment、尺寸和 epoch；无需有人打开预览。
-- `desktop_action`：一次有界的移动、点击、按键、滚轮或文本；必须使用最新 epoch。
+- `desktop_start`：启动本会话独立桌面；可成对指定 width/height（例如 1600×1000），不能调整正在运行的桌面。已有暂停/人工桌面不会因此恢复。
+- `desktop_status` / `desktop_windows`：刷新当前 epoch、启动进程、窗口/焦点及本通道按住状态；不会取得控制权。
+- `desktop_screenshot`：默认重新采集，返回实际 attachment、frame id、capturedAt、cached；支持 region 绝对像素裁剪和 cursor=false。fresh=false 才允许短缓存，无需打开预览。
+- `desktop_probe`：从独立新采集中取得 1–32 个桌面点的 RGBA，不叠加绿色指针；不是源文件像素或语义正确性保证。
+- `desktop_action`：一次有界动作；普通键/快捷键优先 press，省略 down 的 key 也为 press；显式 key down 是高级按住，默认 1500ms 保护释放且 agent 无自动重复。release 只清除本通道已按住输入。必须使用最新 epoch。
+- `desktop_focus`：向正常窗口管理器请求激活，允许模态窗口阻止或重定向；返回 requested/confirmed，不强制抢焦点。
+- `desktop_close_window`：confirm=true 后仅发送 WM_DELETE_WINDOW 请求；应用可提示保存或拒绝，不会强杀或自动丢弃。必须再观察是否关闭。
 - `desktop_launch`：用 executable + argv 启动本机软件，可指定已有项目目录和所需开发环境变量。
 - `desktop_stop`：只停止本会话桌面，要求明确确认，且不能在人工接管或暂停状态下由 AI 强行停止。
 
 启动、输入、启动应用和停止这些 Host 原生写操作要求当前 DSH 会话为 `danger-full-access`。插件不会自动请求或绕过权限提升。截图要求当前模型声明图像输入能力。
 
-截图如果被 DSH attachment 层缩小，工具返回 `coordinates.multiplyImageXBy/multiplyImageYBy`；点击坐标必须换算回原桌面像素。绿色小光标是私有画面上的指针标记，不是用户的物理鼠标。
+截图如果被 DSH attachment 层缩小，工具返回 `coordinates.multiplyImageXBy/multiplyImageYBy`；局部图还返回 offsetX/offsetY。换算为 `desktopX=offsetX+imageX*multiplyImageXBy`，Y 同理。绿色小光标是合成的私有指针标记，不是物理鼠标；可通过 cursor=false 排除。
+
+相同静态像素会产生相同图像 hash，即使确实重新采集。以 frame.id/capturedAt/cached 判断采集时间与缓存，不拿 hash 单独判定输入是否生效。排错、窗口清理和按键实践见 [AI 驱动 GUI 的常见坑](<docs/gui-pitfalls.md>)。
 
 ## 应用与开发环境
 
 - 同一软件可执行文件、解释器、项目与模型数据可以直接复用；通常需要在 AI 桌面新启动该软件，不能一般化地搬走既有窗口。
 - `desktop_launch` 的 `env` 允许开发环境变量，但禁止覆盖 DISPLAY、XAUTHORITY、D-Bus/runtime、LD_PRELOAD 等图形路由字段。
+- 应用的实际工作目录就是 launch.cwd；省略时使用当前 DSH 会话目录，脚本的相对读写路径按此解析。
 - 显式环境参数只用于子应用；不把含有 API key/token/password 等名称的 Host 环境变量自动转发给应用。
 - 浏览器、VS Code 等单实例程序使用**独立 UI profile/新实例参数**，避免把请求送回用户当前窗口。共享一个正在使用的 Chrome profile 不受支持。
 - 初始 xterm 会运行本机 shell；如果 shell 初始化脚本自行覆盖 DISPLAY 或连接其他图形会话，需要先修正该应用启动配方。
@@ -108,6 +114,8 @@ Git 直装请保留 `--ignore-scripts`：pnpm 可能因为包中有开发用 `bu
 - VS Code 烟测的 `--password-store=basic` 仅用于隔离测试 profile，**没有系统 keyring 的凭据静态保护**。不要把它当所有应用的默认安全策略，也不要在烟测 profile 登录重要账号。
 
 ### 文本与 Unicode 边界
+
+文本支持 `\n`/`\r` 映射 Enter、`\t` 映射 Tab，每个都是完整按下/抬起。例如 `{"type":"text","text":"DSH_DESKTOP_OK 中文✓\n"}` 输入标记并提交一次；不要无意使用 CRLF 或向不应提交的对话框发送换行。
 
 文本不是通过宿主剪贴板同步输入。已有键位直接使用 XTEST；缺少的 Unicode 字符分配私有 X server 的空闲键位并保持到该显示结束，以保证忙碌应用稍后处理按键时仍能解码。
 
@@ -124,7 +132,8 @@ X11 键位数量有限。新增不同字符超过剩余槽位时，整次文本�
 | `width` / `height` | 1280 / 800 | 固定桌面像素；允许 320–2560 / 240–1600 |
 | `maxSessions` | 2 | 同时活跃或尚未清理完的桌面上限，最大 4 |
 | `humanLeaseMs` | 10000 | 人工控制断线超时，3–60 秒 |
-| `frameCacheMs` | 300 | 短暂帧缓存，100–2000 ms |
+| `frameCacheMs` | 300 | UI/显式 fresh=false 的帧缓存，100–2000 ms；模型默认绕过 |
+| `agentKeyHoldMs` | 1500 | agent 原始 key down 的最长保持时间，100–10000 ms；正常按键用 press，不影响人工键盘重复 |
 | `startTerminal` | true | 启动后打开初始本机 xterm |
 
 当前没有自动生成的 GUI 设置页。通过用户 profile 的 `cordis.patch.yml` 按插件 id 覆写 Config，例如：
@@ -147,7 +156,7 @@ DSH patch 对 `config` 是整体替换，不是深合并；未指定字段由 Co
 - Linux/Ubuntu 24.04 amd64、X11 原生应用为验证范围；不是 Windows/macOS 通用双桌面方案。
 - 低帧率 PNG 监控适合办公/开发验证，不是 60 FPS 远程桌面产品。
 - 默认软件图形路径。已验证本机 VS Code 在独立 UI profile 中打开、截图、编辑和保存中文；NVIDIA CUDA 计算环境可复用不等于 GUI OpenGL/Vulkan/NVENC 已加速，RViz/Gazebo/Blender 尚需专项实测。
-- 应用启动记录不是完整的进程/窗口生命周期管理器。
+- 应用记录基于原始 Popen 启动进程，保留全部存活记录和最多 32 个最近退出记录；子 GUI 可在包装进程退出后存活。窗口 PID 属性不等于应用家族身份，窗口列表也不是应用内部文档/图层列表。
 - 日志保留在私有 stateRoot；应用可能向其自身日志写入敏感内容。停止后再按需清理，避免删除运行中的 authority/socket。
 - 不提供剪贴板、音频、摄像头、gamepad 转发。程序如果绕过配置直接访问共享硬件，仍是同 UID 权限下的宿主程序。
 - Host 认证与控制令牌保护正常插件入口，不能约束同 UID 的任意恶意代码。

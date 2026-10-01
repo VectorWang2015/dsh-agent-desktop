@@ -14,6 +14,17 @@ DSH 0.1.7-rc.2、Ubuntu 24.04 amd64、系统 Python 3.12、X11 用户桌面。�
 
 公开仓库保留测试源码和脱敏结论，不上传原用户桌面截图、主机路径、会话记录或实际进程回执。安装者应在自己环境中重跑；上述实测不是其他操作系统或任意 GUI 软件的兼容承诺。
 
+## 0.2 反馈回归
+
+- 常规检查目前为 102 个 JS/组件/HTTP/broker 测试、6 个标准库 Python 测试；另有 55 个 worker mock/清理测试（需要测试用 Pillow/python-xlib，不启动显示）。
+- 4 个原生回归覆盖：无 viewer、Unicode 延迟接收、detached 回收，以及新功能完整 Node→worker 链。新回归实际使用 1600×1000，验证原子按键、agent 无连发/超时释放、human 正常重复、Ctrl+S、窗口焦点、退出码、拒绝关闭的窗口仍存在，以及裁剪和 RGBA。
+- 私有已知色窗口的原始采样为 `[18,52,86,255]`，即使合成指针停在该点也不污染 probe；裁剪图的 pointer=true/false 确实不同。
+- 旧版有界基线复现：Return 按住 1.5s 产生约 22 次激活；新版 1.7s agent hold 只有 1 次且自动释放，human 同时长仍正常重复。
+- GTK 新建/失焦/modal 对话框 25/25 首击成功；GIMP 2.10.36 简单 Script-Fu 求值、Browse 首击与礼貌关闭可用，原反馈的持久输入冻结未复现。记录到的短暂 grab 不等于全部问题的根因；详见 [常见坑](<gui-pitfalls.md>)。
+- Worker stdin 已改为可停止的 raw reader，失败启动/停止 5 轮正常退出，不再复现旧 buffered-reader 终结 abort。
+
+这些 native 测试只操作新建的私有显示和合成内容，结束时回收 owned 进程；不读取或驱动物理桌面。
+
 ## 常规检查
 
 ```bash
@@ -21,7 +32,7 @@ pnpm install --frozen-lockfile
 pnpm run check
 ```
 
-默认测试不会启动桌面；原生烟测为 opt-in。公开演示程序另有 3 项无 GUI 的标准库测试，确认有效 marker 输出、错误 marker 不写入、已存在目录不覆盖。
+默认测试不会启动桌面；原生烟测为 opt-in。Vitest 只发现测试目录，忽略研究工件中的历史副本。Worker mock 使用已准备 runtime 时可执行 `pnpm test:worker`；CI 单独创建 Python venv，用 [锁定测试依赖](<../tests/requirements-worker.txt>) 安装纯测试依赖，再运行 worker mocks，不下载/启动 Xvfb。公开演示程序另有 3 项无 GUI 的标准库测试，确认有效 marker 输出、错误 marker 不写入、已存在目录不覆盖。
 
 ```bash
 # 需要先完成 native setup
@@ -44,6 +55,6 @@ Git 包含三个预构建文件；推荐目录安装，Git 直装使用 `--ignor
 - GPU OpenGL/Vulkan/NVENC、RViz/Gazebo/Blender 和任意工具包/IME。
 - 跨 DSH Host 重启恢复或防恶意同 UID 程序。
 - 全部常用应用共用 UI profile 并行，以及任意既有窗口迁移。
-- 高帧率串流；Selkies 2.0 仅完成独立 PoC，没有接入 0.1 的实际控制链。
+- 高帧率串流；Selkies 2.0 仅完成独立 PoC，尚未接入实际控制链。
 
 [示例任务](<../examples/first-task.zh.md>) 是新 agent 的推荐试用路径，比直接运行版本相关的 IDE 烟测更合适。

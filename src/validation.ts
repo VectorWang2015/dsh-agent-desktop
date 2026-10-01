@@ -1,4 +1,4 @@
-import type { ApplicationRequest, ControlAction, DesktopAction } from './types.ts'
+import type { ApplicationRequest, ControlAction, DesktopAction, DesktopRegion, DesktopSize } from './types.ts'
 
 export class DesktopError extends Error {
   constructor(message: string, readonly code = 'desktop-error', readonly httpStatus = 409) {
@@ -45,14 +45,52 @@ export function action(value: unknown, width: number, height: number): DesktopAc
       if (typeof v.down !== 'boolean') throw new DesktopError('down must be boolean', 'bad-input', 400)
       return { type: 'button', ...optionalPoint(), button: button(v.button), down: v.down }
     case 'scroll': return { type: 'scroll', ...optionalPoint(), deltaY: number(v.deltaY, 'deltaY', -2000, 2000), deltaX: number(v.deltaX ?? 0, 'deltaX', -2000, 2000) }
-    case 'key':
-      if (typeof v.down !== 'boolean' || typeof v.key !== 'string' || v.key.length < 1 || v.key.length > 64 || /[\u0000-\u001f]/.test(v.key)) throw new DesktopError('Invalid key event', 'bad-input', 400)
-      return { type: 'key', key: v.key, down: v.down }
+    case 'press':
+    case 'key': {
+      if (typeof v.key !== 'string' || v.key.length < 1 || v.key.length > 64 || /[\u0000-\u001f]/.test(v.key)) throw new DesktopError('Invalid key event', 'bad-input', 400)
+      if (v.type === 'key' && v.down !== undefined) {
+        if (typeof v.down !== 'boolean' || v.modifiers !== undefined) throw new DesktopError('Raw key needs boolean down and no modifiers; prefer press', 'bad-input', 400)
+        return { type: 'key', key: v.key, down: v.down }
+      }
+      if (v.type === 'press' && v.down !== undefined) throw new DesktopError('press is already a complete down/up pair; omit down', 'bad-input', 400)
+      const modifiers = v.modifiers ?? []
+      if (!Array.isArray(modifiers) || modifiers.length > 4 || modifiers.some(m => !['Control', 'Alt', 'Shift', 'Meta'].includes(m)) || new Set(modifiers).size !== modifiers.length) throw new DesktopError('Invalid press modifiers', 'bad-input', 400)
+      return { type: 'press', key: v.key, modifiers: modifiers as Array<'Control' | 'Alt' | 'Shift' | 'Meta'> }
+    }
+    case 'release': return { type: 'release' }
     case 'text':
       if (typeof v.text !== 'string' || v.text.length < 1 || v.text.length > 4000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f\ud800-\udfff]/u.test(v.text)) throw new DesktopError('text must contain 1..4000 valid Unicode characters without unsupported control codes', 'bad-input', 400)
       return { type: 'text', text: v.text }
     default: throw new DesktopError('Unsupported input action', 'bad-input', 400)
   }
+}
+export function desktopSize(value: unknown): DesktopSize | undefined {
+  const v = object(value)
+  if (v.width === undefined && v.height === undefined) return undefined
+  const width = number(v.width, 'width', 320, 2560), height = number(v.height, 'height', 240, 1600)
+  if (!Number.isInteger(width) || !Number.isInteger(height)) throw new DesktopError('Desktop dimensions must be integers', 'bad-size', 400)
+  return { width, height }
+}
+export function region(value: unknown, width: number, height: number): DesktopRegion | undefined {
+  if (value === undefined) return undefined
+  const v = object(value)
+  const x = number(v.x, 'region.x', 0, width - 1), y = number(v.y, 'region.y', 0, height - 1)
+  const w = number(v.width, 'region.width', 1, width - x), h = number(v.height, 'region.height', 1, height - y)
+  if (![x, y, w, h].every(Number.isInteger)) throw new DesktopError('Region must use integer desktop pixels', 'bad-region', 400)
+  return { x, y, width: w, height: h }
+}
+export function probePoints(value: unknown, width: number, height: number): Array<{ x: number; y: number }> {
+  if (!Array.isArray(value) || value.length < 1 || value.length > 32) throw new DesktopError('Provide 1..32 probe points', 'bad-probe', 400)
+  return value.map(point => {
+    const p = object(point), x = number(p.x, 'x', 0, width - 1), y = number(p.y, 'y', 0, height - 1)
+    if (!Number.isInteger(x) || !Number.isInteger(y)) throw new DesktopError('Probe points must be integer pixels', 'bad-probe', 400)
+    return { x, y }
+  })
+}
+export function windowId(value: unknown): number {
+  const id = number(value, 'windowId', 2, 0xffffffff)
+  if (!Number.isInteger(id)) throw new DesktopError('windowId must be an integer from desktop_windows', 'bad-window', 400)
+  return id
 }
 const ROUTING_ENV = /^(DISPLAY|WAYLAND_DISPLAY|XAUTHORITY|XDG_RUNTIME_DIR|DBUS_.*|SESSION_MANAGER|PULSE_.*|PIPEWIRE_.*|LD_PRELOAD|DSH_.*|SELKIES_.*|PIXELFLUX_.*|GDK_BACKEND|QT_QPA_PLATFORM)$/i
 export function application(value: unknown, defaultCwd: string): ApplicationRequest {

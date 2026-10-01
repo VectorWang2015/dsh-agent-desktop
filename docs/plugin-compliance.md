@@ -26,7 +26,7 @@
 | Browser externals | 仅 React 和 DSH 静态 UI 基线库；不滥用 `dsh.client.external` 引用其他功能插件 |
 | Sidebar | 正式 `sidebarRightTabs` + keyed `sidebar.right.pane.tab` + `slots.inject`，有 effect disposer |
 | Display metadata | `locale/en.json` / `locale/zh.json` 中 `meta.title/description`，manifest-relative SVG icon 与 resource exports |
-| Localization | 插件列表提供中英文元数据；0.1 的桌面 UI 明确为中文-only，不假称双语完整翻译 |
+| Localization | 插件列表提供中英文元数据；桌面 UI 明确为中文-only，不假称双语完整翻译 |
 | Auth | HTTP 先使用 DSH Connection admission，再查会话；human input 额外要求当前能力令牌与 epoch |
 | Tools | Session-bound，写操作检查当前 permission；图像走附件；不自动绕过人工/暂停所有权 |
 | Packaging | 明确文件白名单；无 `.runtime`、`.state`、artifacts、source map、凭据或原始主机研究报告 |

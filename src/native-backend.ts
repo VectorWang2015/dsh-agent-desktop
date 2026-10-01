@@ -3,7 +3,8 @@ import { constants } from 'node:fs'
 import { join, isAbsolute } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { SubprocessHandle, SubprocessSpawnSpec } from '@deepseek-ai/dsh-subprocess'
-import type { ApplicationRequest, DesktopAction, DesktopBackend, Frame, NativePaths } from './types.ts'
+import type { ApplicationRequest, DesktopAction, DesktopBackend, DesktopInventory, Frame, FrameOptions, NativePaths, PixelProbe, WindowOperation } from './types.ts'
+import { frameId, inventory, pixelProbe, windowOperation } from './native-values.ts'
 import { DesktopError, object } from './validation.ts'
 
 export type Spawn = (spec: SubprocessSpawnSpec) => SubprocessHandle
@@ -14,6 +15,7 @@ interface BackendOptions {
   width: number
   height: number
   startTerminal: boolean
+  agentKeyHoldMs?: number
   spawn: Spawn
   workerPath?: string
 }
@@ -82,7 +84,7 @@ export class NativeBackend implements DesktopBackend {
     this.handle.stdout.setEncoding('utf8')
     this.handle.stdout.on('data', (data: string) => this.consume(data))
     void this.handle.done.then(outcome => this.exited(new Error(`Desktop worker exited (${outcome.exitCode ?? outcome.signal})`)), error => this.exited(error instanceof Error ? error : new Error(String(error))))
-    const result = object(await this.call('start', { config: { paths: this.paths, stateDir, cwd: this.options.cwd, width: this.options.width, height: this.options.height, startTerminal: this.options.startTerminal } }, signal, 25_000))
+    const result = object(await this.call('start', { config: { paths: this.paths, stateDir, cwd: this.options.cwd, width: this.options.width, height: this.options.height, startTerminal: this.options.startTerminal, agentKeyHoldMs: this.options.agentKeyHoldMs ?? 1500 } }, signal, 25_000))
     if (typeof result.display !== 'string' || !/^:\d+$/.test(result.display)) throw new Error('Worker did not return its owned display')
     return { display: result.display }
   }
@@ -136,8 +138,8 @@ export class NativeBackend implements DesktopBackend {
       })
     })
   }
-  async frame(signal?: AbortSignal): Promise<Frame> {
-    const result = object(await this.call('frame', {}, signal))
+  async frame(signal?: AbortSignal, options: FrameOptions = {}): Promise<Frame> {
+    const result = object(await this.call('frame', { options: { ...(options.region ? { region: options.region } : {}), cursor: options.cursor !== false } }, signal))
     if (result.imageFile !== 'frame.png' || !this.stateDir) throw new Error('Worker returned no owned PNG frame')
     const file = await open(join(this.stateDir, 'frame.png'), constants.O_RDONLY | constants.O_NOFOLLOW)
     let data: Buffer
@@ -148,11 +150,19 @@ export class NativeBackend implements DesktopBackend {
     } finally { await file.close() }
     if (data.length > 16 * 1024 * 1024 || data.length < 24 || !data.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) throw new Error('Invalid or oversized desktop frame')
     const width = data.readUInt32BE(16), height = data.readUInt32BE(20)
-    if (width !== this.options.width || height !== this.options.height) throw new Error('Desktop resolution changed unexpectedly; input remains fixed')
-    const windows = Array.isArray(result.windows) ? result.windows.slice(0, 32).flatMap(value => { const w = object(value); return typeof w.title === 'string' && Number.isSafeInteger(w.id) ? [{ id: w.id as number, title: w.title.slice(0, 250) }] : [] }) : []
-    return { data, width, height, timestamp: new Date().toISOString(), windows }
+    const region = options.region ?? { x: 0, y: 0, width: this.options.width, height: this.options.height }
+    if (width !== region.width || height !== region.height) throw new Error('Desktop capture dimensions changed unexpectedly')
+    const returnedRegion = object(result.region)
+    for (const key of ['x', 'y', 'width', 'height'] as const) if (returnedRegion[key] !== region[key]) throw new Error('Native capture region mismatch')
+    if (typeof result.timestamp !== 'number' || !Number.isFinite(result.timestamp) || result.timestamp <= 0 || result.timestamp > 8.64e12) throw new Error('Invalid capture time')
+    const details = inventory(result)
+    return { data, width, height, timestamp: new Date(result.timestamp * 1000).toISOString(), frameId: frameId(result.frameId), region, windows: details.windows, inventory: details }
   }
-  async input(action: DesktopAction, signal?: AbortSignal): Promise<void> { await this.call('input', { action }, signal) }
+  async input(action: DesktopAction, signal?: AbortSignal, actor: 'agent' | 'human' = 'agent'): Promise<void> { await this.call('input', { action, actor }, signal) }
+  async inspect(signal?: AbortSignal): Promise<DesktopInventory> { return inventory(await this.call('inspect', {}, signal)) }
+  async probe(points: Array<{ x: number; y: number }>, signal?: AbortSignal): Promise<PixelProbe> { return pixelProbe(await this.call('probe', { points }, signal), points) }
+  async focus(windowId: number, signal?: AbortSignal): Promise<WindowOperation> { return windowOperation(await this.call('focus', { windowId }, signal), windowId) }
+  async closeWindow(windowId: number, signal?: AbortSignal): Promise<WindowOperation> { return windowOperation(await this.call('closeWindow', { windowId }, signal), windowId) }
   async release(): Promise<void> { await this.call('release') }
   async launch(request: ApplicationRequest, signal?: AbortSignal): Promise<{ id: string; pid: number }> {
     const result = object(await this.call('launch', { request }, signal))

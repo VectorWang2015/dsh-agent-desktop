@@ -4,7 +4,7 @@ Host-native background graphical sessions for AI, with a DSH sidebar monitor and
 
 **智能体使用独立桌面，软件和开发环境仍在原宿主上。** 不需要虚拟机或容器，也不承诺安全沙箱。
 
-- **插件版本**：0.1.0
+- **插件版本**：0.2.0
 - **已验证 DSH**：0.1.7-rc.2，暂不放宽到未测试版本
 - **运行环境**：Ubuntu 24.04 amd64、系统 Python 3.12；侧栏目前为中文 UI
 - **监控方式**：PNG 预览，最高 2 FPS；不是高帧率远程桌面产品
@@ -14,7 +14,9 @@ Host-native background graphical sessions for AI, with a DSH sidebar monitor and
 - 每个 DSH 会话独立的 Xvfb、Openbox、最小 D-Bus 和应用进程。
 - 复用本机已有程序、Python/Conda/Node 等环境与项目文件。
 - 官方右侧栏 **智能体桌面**：默认只读、启动、暂停、恢复、人工接管、释放、确认停止。
-- `desktop_start`、`desktop_status`、`desktop_screenshot`、`desktop_action`、`desktop_launch`、`desktop_stop` 六个工具。
+- 启停、截图、输入、应用启动六个核心工具，以及 `desktop_windows`、`desktop_focus`、`desktop_close_window`、`desktop_probe`。
+- 原子按键/快捷键、受保护的 agent 原始按住；真实启动进程状态、模态/焦点/按住状态诊断。
+- 新鲜截图、局部裁剪和无合成光标的像素采样；新桌面可指定尺寸，不强制修改已有窗口。
 - 无人观看时仍能截图/输入；关闭侧栏不停止应用。
 - DSH 认证、会话权限、输入 epoch、人工控制令牌和断线租约共同保护正常控制通道。
 - 只管理自己的子进程，不修改 GDM/Xorg、显卡驱动或已有虚拟机。
@@ -61,6 +63,8 @@ pnpm run check
 
 # 可选：会启动独立测试桌面，需要先 setup-native
 pnpm run test:smoke
+# 同一 runtime 的 Python 依赖可运行 worker mocks，不会启动桌面
+pnpm run test:worker
 # 可选：还需要本机 /usr/bin/code；包含版本相关的首次启动界面操作
 pnpm run test:ide
 ```
@@ -80,6 +84,7 @@ pnpm run test:ide
 
 - [使用与配置](<USAGE.md>)
 - [架构和生命周期](<docs/architecture.md>)
+- [AI 驱动 GUI 的常见坑](<docs/gui-pitfalls.md>) / [更新记录](<CHANGELOG.md>)
 - [DSH 规范核对](<docs/plugin-compliance.md>)
 - [测试与实测范围](<docs/validation.md>)
 - [示例任务](<examples/first-task.zh.md>)

@@ -27,7 +27,7 @@ const expected = [
   'scripts/setup-native.py', 'scripts/setup-native.sh', 'assets/icon.svg',
   'locale/en.json', 'locale/zh.json', 'cordis.patch.yml', 'README.md', 'USAGE.md',
   'LICENSE', 'THIRD_PARTY_NOTICES.md', 'docs/architecture.md', 'docs/validation.md',
-  'docs/plugin-compliance.md', 'examples/first-task.zh.md', 'examples/desktop-demo.py',
+  'docs/plugin-compliance.md', 'docs/gui-pitfalls.md', 'CHANGELOG.md', 'examples/first-task.zh.md', 'examples/desktop-demo.py',
 ]
 assert.deepEqual([...manifest.files].sort(), expected.sort(), 'Publication files must be explicitly reviewed')
 for (const path of manifest.files) assert((await stat(resolve(root, path))).isFile(), `Missing package file: ${path}`)

@@ -18,6 +18,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check
+      - name: Check native worker logic without a desktop
+        run: |
+          /usr/bin/python3 -m venv "$RUNNER_TEMP/desktop-worker-tests"
+          "$RUNNER_TEMP/desktop-worker-tests/bin/pip" install --only-binary=:all: --require-hashes -r tests/requirements-worker.txt
+          "$RUNNER_TEMP/desktop-worker-tests/bin/python" -B tests/worker_feedback_test.py
       - name: Ensure committed bundles match their sources
         run: git diff --exit-code -- lib/index.js lib/client.js lib/client.css
       # Native GUI smokes require an explicitly prepared local runtime and are not run here.
