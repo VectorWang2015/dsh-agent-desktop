@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Agent Desktop",
+    "description": "Independent host-native graphical sessions with read-only monitoring and explicit human takeover. Not a VM or security sandbox."
+  }
+}

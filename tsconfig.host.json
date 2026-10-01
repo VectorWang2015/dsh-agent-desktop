@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/*.ts", "tests/broker.test.ts", "tests/native.smoke.test.ts", "tests/native-vscode.smoke.test.ts", "tests/node-spawn.ts", "tests/http.test.ts", "tests/host*.ts"],
+  "exclude": ["src/client/**", "tests/client*.ts", "tests/client*.tsx"]
+}

@@ -1,0 +1,23 @@
+name: Plugin checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run check
+      - name: Ensure committed bundles match their sources
+        run: git diff --exit-code -- lib/index.js lib/client.js lib/client.css
+      # Native GUI smokes require an explicitly prepared local runtime and are not run here.

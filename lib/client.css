@@ -1,0 +1,204 @@
+/* src/client/Desktop.module.css */
+.Desktop_root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 12px;
+  overflow: auto;
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-bg-base);
+  font: var(--dsw-font-xxs-12);
+}
+.Desktop_root p {
+  margin: 0;
+}
+.Desktop_header {
+  display: grid;
+  gap: 5px;
+}
+.Desktop_statusLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.Desktop_statusLine strong {
+  font: var(--dsw-font-xs-strong-13);
+}
+.Desktop_mode {
+  padding: 2px 7px;
+  border-radius: var(--dsw-radius-sm);
+  color: var(--dsw-alias-label-secondary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+.Desktop_human {
+  color: var(--dsw-alias-state-warn-label);
+  background: var(--dsw-alias-state-warn-tertiary);
+}
+.Desktop_toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.Desktop_danger:not(:disabled) {
+  color: var(--dsw-alias-state-error-primary);
+}
+.Desktop_muted,
+.Desktop_instructions,
+.Desktop_footer,
+.Desktop_previewMeta {
+  color: var(--dsw-alias-label-tertiary);
+}
+.Desktop_notice {
+  color: var(--dsw-alias-state-business-primary);
+}
+.Desktop_warning,
+.Desktop_confirm {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--dsw-alias-state-warn-primary);
+  border-radius: var(--dsw-radius-sm);
+  color: var(--dsw-alias-label-primary);
+  background: color-mix(in srgb, var(--dsw-alias-state-warn-tertiary) 35%, var(--dsw-alias-bg-base));
+}
+.Desktop_errorDetail {
+  overflow-wrap: anywhere;
+  color: var(--dsw-alias-label-secondary);
+}
+.Desktop_acknowledge {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  cursor: pointer;
+}
+.Desktop_acknowledge input {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  accent-color: var(--dsw-alias-state-business-primary);
+}
+.Desktop_previewMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px;
+}
+.Desktop_preview {
+  position: relative;
+  flex: 1 0 200px;
+  min-height: 160px;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--dsw-radius-sm);
+  background: var(--dsw-alias-bg-document-preview);
+  user-select: none;
+  outline-offset: 2px;
+}
+.Desktop_preview:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+}
+.Desktop_interactive {
+  touch-action: none;
+  cursor: crosshair;
+}
+.Desktop_frame {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+}
+.Desktop_placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: var(--dsw-alias-label-document-preview);
+  text-align: center;
+}
+.Desktop_instructions,
+.Desktop_footer {
+  display: grid;
+  gap: 5px;
+}
+.Desktop_reset {
+  align-self: flex-start;
+}
+.Desktop_textForm {
+  display: grid;
+  gap: 6px;
+}
+.Desktop_textInput {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 64px;
+  padding: 8px;
+  resize: vertical;
+  border: 0.5px solid var(--dsw-alias-border-l3);
+  border-radius: var(--dsw-radius-sm);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font: var(--dsw-font-xxs-12);
+}
+.Desktop_textInput:focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary);
+  outline-offset: 1px;
+}
+.Desktop_textInput:disabled {
+  color: var(--dsw-alias-label-tertiary);
+  opacity: 0.65;
+}
+.Desktop_textInput::placeholder {
+  color: var(--dsw-alias-label-tertiary);
+}
+.Desktop_textActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.Desktop_details {
+  padding-top: 8px;
+  border-top: 0.5px solid var(--dsw-alias-border-l2);
+}
+.Desktop_details summary {
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+}
+.Desktop_details dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 5px 10px;
+}
+.Desktop_details dt {
+  color: var(--dsw-alias-label-tertiary);
+}
+.Desktop_details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.Desktop_details li {
+  margin-block: 4px;
+  overflow-wrap: anywhere;
+}
+.Desktop_details ul {
+  padding-left: 18px;
+}
+.Desktop_footer {
+  padding-top: 8px;
+  border-top: 0.5px solid var(--dsw-alias-border-l2);
+}

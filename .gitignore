@@ -1,0 +1,28 @@
+# Machine-local state, downloads, profiles, and evidence are never public.
+node_modules/
+.runtime/
+.state/
+artifacts/
+releases/
+coverage/
+__pycache__/
+*.py[cod]
+*.tgz
+*.log
+*.map
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# Retain these original machine-specific research records locally only.
+/ARCHITECTURE-AND-VALIDATION.md
+/HOST-ENVIRONMENT.md
+/IMPLEMENTATION-CONTRACT.md
+/NATIVE-PROBE.md
+/RESEARCH-*.md
+/REVIEW.md
+/VALIDATION.md
+/dsh-plugin.json
+
+# lib/index.js, lib/client.js and lib/client.css are intentionally versioned.
