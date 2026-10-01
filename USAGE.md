@@ -59,10 +59,12 @@ dsh plugin --profile web remove dsh-agent-desktop
 推荐本地 clone + link，运行时位置清楚且便于升级。也可以使用预构建 Git 包；生产安装建议把 `<commit>` 换成已审阅的完整提交号：
 
 ```bash
-dsh plugin --profile web add 'github:VectorWang2015/dsh-agent-desktop#<commit>'
+dsh plugin --profile web add 'github:VectorWang2015/dsh-agent-desktop#<commit>' --ignore-scripts
 # 或安装自己构建、校验过的 tarball
 dsh plugin --profile web add /absolute/path/to/dsh-agent-desktop-0.1.0.tgz
 ```
+
+Git 直装请保留 `--ignore-scripts`：pnpm 可能因为包中有开发用 `build` 命令而把 Git 包标记为需要构建，即使没有 prepare 钩子。这里已随 Git 提供构建产物，不需要授权该步骤。固定提交的 GitHub 包已用此方式验证入口和 locale 导出。
 
 直接安装后仍需在实际包目录运行设置脚本。默认 Web profile 的包目录通常为 `$DSH_HOME/profiles/web/node_modules/dsh-agent-desktop`（默认 DSH_HOME 是用户 `.dsh` 目录）；使用自定义 Home/Profile 时替换为实际路径。安装期不自动拉取 Xvfb、下载 Python wheels 或启动桌面。
 

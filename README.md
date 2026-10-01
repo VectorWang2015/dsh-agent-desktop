@@ -37,7 +37,7 @@ bash scripts/setup-native.sh --offline
 dsh plugin --profile web add "$PWD"
 ```
 
-仓库包含复核后的 [Host bundle](<lib/index.js>)、[Client bundle](<lib/client.js>) 和 [CSS](<lib/client.css>)；普通用户不必执行 `pnpm install` 或安装期 `prepare`。原生设置仍需显式执行；首次 `--offline` 前必须准备下载缓存。
+仓库包含复核后的 [Host bundle](<lib/index.js>)、[Client bundle](<lib/client.js>) 和 [CSS](<lib/client.css>)；普通用户不必执行 `pnpm install` 或安装期 `prepare`。如果不用本地 clone 而直接安装 Git URL，请按 [USAGE](<USAGE.md>) 添加 `--ignore-scripts`，避免 pnpm 将开发用 build 当成安装步骤。原生设置仍需显式执行；首次 `--offline` 前必须准备下载缓存。
 
 设置脚本限定 Ubuntu 24.04 amd64，要求已有系统 Python 3.12/venv、xterm、D-Bus、xauth 等基础库，使用固定包版本和 SHA256。缺少先决条件或仓库不再提供固定版本时会报错，不自动 sudo、升级驱动或绕过哈希。运行时含绝对路径，**不要复制其他机器的 `.runtime`**。
 

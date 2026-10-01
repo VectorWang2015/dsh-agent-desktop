@@ -30,7 +30,7 @@
 | Auth | HTTP 先使用 DSH Connection admission，再查会话；human input 额外要求当前能力令牌与 epoch |
 | Tools | Session-bound，写操作检查当前 permission；图像走附件；不自动绕过人工/暂停所有权 |
 | Packaging | 明确文件白名单；无 `.runtime`、`.state`、artifacts、source map、凭据或原始主机研究报告 |
-| Git install | 同时提交干净的三个 lib 产物；没有自动 prepare/install 脚本，native setup 是显式动作 |
+| Git install | 同时提交干净的三个 lib 产物；不定义 prepare/install 钩子，Git 直装显式 `--ignore-scripts`，native setup 是独立动作 |
 | Licenses | 保留原代码 MIT、实际内联第三方版权；下载运行时不随源码包分发 |
 
 ## 哪些不是必须复制的规范

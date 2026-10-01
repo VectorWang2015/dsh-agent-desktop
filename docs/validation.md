@@ -36,7 +36,7 @@ IDE 烟测使用单独 UI profile、禁用扩展并明确设置 password-store=b
 
 [包检查脚本](<../scripts/check-package.mjs>) 验证官方清单位置、入口/locale/icon、明确载荷白名单、没有 install/prepare 钩子、没有邻仓 link:、构建文件不含 source map 引用、公共文件没有主机特定路径或显式凭据。
 
-Git 包含三个预构建文件；普通安装无需构建许可。开发检查使用 registry 固定版本和 lockfile，并在干净目录验证构建/包安装，不通过本机相邻 checkout 的偶然类型解析宣称可移植。
+Git 包含三个预构建文件；推荐目录安装，Git 直装使用 `--ignore-scripts`，无需构建许可。开发检查使用 registry 固定版本和 lockfile：已经在与项目不相邻的干净临时目录完成安装、全部常规检查，并比对三个构建文件逐字节一致。固定提交的 GitHub 生产安装也已在另一临时目录验证：未运行安装脚本，Host 可导入、locale 可解析，未夹带原生运行时。本机相邻 checkout 不作为隐含依赖。
 
 ## 尚未承诺的范围
 
