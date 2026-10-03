@@ -1,6 +1,6 @@
 # 智能体桌面插件使用说明
 
-`dsh-agent-desktop` 0.2.0，针对 DSH 0.1.7-rc.2 和 Ubuntu 24.04 amd64 验证。
+`dsh-agent-desktop` 0.2.1，兼容目标为 DSH 0.2.0-rc.2；类型、单元测试和构建已验证，Ubuntu 24.04 amd64 原生 GUI 实测基线仍为 DSH 0.1.7-rc.2，详见 [验收范围](<docs/validation.md>)。
 
 ## 这是什么
 
@@ -56,12 +56,12 @@ dsh plugin --profile web remove dsh-agent-desktop
 
 ### 直接安装 Git 或 tarball
 
-推荐本地 clone + link，运行时位置清楚且便于升级。也可以使用预构建 Git 包；生产安装建议把 `<commit>` 换成已审阅的完整提交号：
+本地 clone + link 便于开发，但源码/构建更新可能影响正在加载的插件；需要把日常仓库改动与生产 profile 隔离时，使用已构建的固定版本 tarball。也可以使用预构建 Git 包；生产安装建议把 `<commit>` 换成已审阅的完整提交号：
 
 ```bash
 dsh plugin --profile web add 'github:VectorWang2015/dsh-agent-desktop#<commit>' --ignore-scripts
 # 或安装自己构建、校验过的 tarball
-dsh plugin --profile web add /absolute/path/to/dsh-agent-desktop-0.2.0.tgz
+dsh plugin --profile web add /absolute/path/to/dsh-agent-desktop-0.2.1.tgz
 ```
 
 Git 直装请保留 `--ignore-scripts`：pnpm 可能因为包中有开发用 `build` 命令而把 Git 包标记为需要构建，即使没有 prepare 钩子。这里已随 Git 提供构建产物，不需要授权该步骤。固定提交的 GitHub 包已用此方式验证入口和 locale 导出。
@@ -69,6 +69,8 @@ Git 直装请保留 `--ignore-scripts`：pnpm 可能因为包中有开发用 `bu
 直接安装后仍需在实际包目录运行设置脚本。默认 Web profile 的包目录通常为 `$DSH_HOME/profiles/web/node_modules/dsh-agent-desktop`（默认 DSH_HOME 是用户 `.dsh` 目录）；使用自定义 Home/Profile 时替换为实际路径。安装期不自动拉取 Xvfb、下载 Python wheels 或启动桌面。
 
 另一种方式是在稳定的 checkout 准备运行时，再通过下方 `runtimeRoot` 配置让已安装插件引用它。不要复制 venv 或手改 Xauthority。包声明不代表已经发布到 npm registry；本项目当前提供 Git/目录/tarball 安装。
+
+从 live link 切换为 tarball 时，先保存所有桌面工作并安排 Host 重载窗口，再用目标 DSH 版本替换 profile 包；不要直接覆盖 live checkout 的 `src`、`lib` 或 `runtime`。tarball 不包含 `.runtime`，应显式保留原先稳定绝对路径的 `runtimeRoot`（以及自定义 `stateRoot`），否则默认值会改指新包目录。worker 脚本来自已安装 tarball，native 支撑组件来自 `runtimeRoot`，二者可以分离；保留后者不会继续跟随源码热更新。但切换/重载本身仍会回收旧 Host 拥有的桌面，没有跨重启恢复。
 
 ## 侧边栏
 

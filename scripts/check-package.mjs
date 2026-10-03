@@ -9,7 +9,12 @@ const read = path => readFile(resolve(root, path), 'utf8')
 const manifest = JSON.parse(await read('package.json'))
 assert.equal(manifest.name, 'dsh-agent-desktop')
 assert.equal(manifest.type, 'module')
-assert.equal(manifest.engines.dsh, '0.1.7-rc.2')
+assert.equal(manifest.engines.dsh, '0.2.0-rc.2')
+for (const section of ['peerDependencies', 'devDependencies']) {
+  for (const [name, version] of Object.entries(manifest[section])) {
+    if (name.startsWith('@deepseek-ai/dsh-')) assert.equal(version, manifest.engines.dsh, `${section}.${name} must match the tested DSH release`)
+  }
+}
 assert.equal(manifest.dsh.engines, undefined, 'Compatibility belongs under top-level engines')
 assert.equal(manifest.dsh.bundle.patch, './cordis.patch.yml')
 assert.equal(manifest.dsh.client.platform, 'web')

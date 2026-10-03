@@ -4,8 +4,8 @@ Host-native background graphical sessions for AI, with a DSH sidebar monitor and
 
 **智能体使用独立桌面，软件和开发环境仍在原宿主上。** 不需要虚拟机或容器，也不承诺安全沙箱。
 
-- **插件版本**：0.2.0
-- **已验证 DSH**：0.1.7-rc.2，暂不放宽到未测试版本
+- **插件版本**：0.2.1
+- **兼容 DSH**：0.2.0-rc.2（类型、单元测试和构建验证），暂不放宽到未测试版本；原生 GUI 实测基线仍为 DSH 0.1.7-rc.2，详见 [验收范围](<docs/validation.md>)
 - **运行环境**：Ubuntu 24.04 amd64、系统 Python 3.12；侧栏目前为中文 UI
 - **监控方式**：PNG 预览，最高 2 FPS；不是高帧率远程桌面产品
 
@@ -23,9 +23,9 @@ Host-native background graphical sessions for AI, with a DSH sidebar monitor and
 
 Selkies 2.0 的原生串流已经做过独立概念验证，但 **不是 0.1 后端**。本版不启用它独立且未认证的 Computer-Use HTTP 接口。
 
-## 安装：推荐克隆后本地链接
+## 安装：克隆后本地链接（开发用）
 
-先安装 DSH 0.1.7-rc.2，并使用其正常 Web profile。Node 版本需满足 `^22.19.0 || >=24.0.0`。
+先安装 DSH 0.2.0-rc.2，并使用其正常 Web profile。Node 版本需满足 `^22.19.0 || >=24.0.0`。
 
 ```bash
 git clone https://github.com/VectorWang2015/dsh-agent-desktop.git
@@ -45,7 +45,7 @@ dsh plugin --profile web add "$PWD"
 
 安装后刷新原 DSH 页面，进入 **右侧栏 → 开始页 → 智能体桌面**。没有全局 `dsh` 时，可从 DSH checkout 使用其规范 `pnpm dsh ...` 启动方式。
 
-完整的 Git/tarball 安装、配置和卸载说明见 [USAGE](<USAGE.md>)。
+生产 profile 如需避免源码改动热影响，请使用固定版本预构建 tarball，并配置稳定的 `runtimeRoot`；切换时仍须保存工作并安排 Host 重载。完整的 Git/tarball 安装、配置和卸载说明见 [USAGE](<USAGE.md>)。
 
 ## 给新 agent 试用
 

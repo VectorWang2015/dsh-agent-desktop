@@ -22,7 +22,7 @@ Stopping requires a separate confirmation, acknowledgement of unsaved applicatio
 
 ## Build and test inputs
 
-Browser module-table baseline imports: `react`, `react/jsx-runtime`, `@deepseek-ai/dsh-client-store`, and `@deepseek-ai/dsh-client-ui-primitives`. `clsx` is bundled privately. Do not add feature-plugin `dsh.client.external` entries. Type-only inputs are Cordis `4.0.4` and the DSH `connection`, `locale`, `ui-renderer`, `ui-session`, `ui-sidebar-right`, and `ui-slots` client faces, matching DSH `0.1.7-rc.2`.
+Browser module-table baseline imports: `react`, `react/jsx-runtime`, `@deepseek-ai/dsh-client-store`, and `@deepseek-ai/dsh-client-ui-primitives`. `clsx` is bundled privately. Do not add feature-plugin `dsh.client.external` entries. Type-only inputs are Cordis `4.0.4` and the DSH `connection`, `locale`, `ui-renderer`, `ui-session`, `ui-sidebar-right`, and `ui-slots` client faces, matching DSH `0.2.0-rc.2`.
 
 Tested installed development versions: React/React DOM `18.3.1`, `clsx` `2.1.1`, TypeScript `5.9.3`, Vitest `3.2.7`, jsdom `26.1.0`, `@types/react` `18.3.31`, and `@types/react-dom` `18.3.7`. The Node type package is also needed because the shared Host type module contains Node-only declarations. Tests use React DOM directly; no Testing Library dependency is required.
 

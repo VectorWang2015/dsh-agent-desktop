@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 — DSH 0.2.0-rc.2 compatibility
+
+- Pin all DSH peer/development dependencies and the Host engine to `0.2.0-rc.2`; package checks reject mismatched DSH versions.
+- Add real-Cordis Host registration tests for per-call session permission resolution, read-only observation, cancellation and rejection before native process creation.
+- Keep desktop owner/epoch, human capability/lease, atomic keypress, raw-hold expiry and native worker behavior unchanged. No native setup, live worker or GUI smoke is part of this compatibility update.
+- Document immutable tarball deployment with an explicit stable `runtimeRoot`; switching away from a live source link still needs a save/reload maintenance window.
+
 ## 0.2.0 — GUI feedback improvements
 
 - Atomic `press`/modifier chords; a key without `down` defaults to press. Explicit raw agent holds suppress private per-key repeat and expire after a configurable bounded duration (default 1500ms); human repeat/leases are unchanged. Added explicit release and unconfirmed-release quarantine.

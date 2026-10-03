@@ -1,6 +1,14 @@
 # 测试与实测范围
 
-## 已验证环境
+## 0.2.1 兼容性验证
+
+兼容目标为 DSH **0.2.0-rc.2**，DSH peer/development/engine 均精确锁定此版本，Cordis 保持 `4.0.4`。在不接触 live profile 的独立 Git clone 中安装依赖、执行 Host/Client typecheck、118 个 JS/组件/HTTP/broker/权限测试、6 个标准库 Python 测试以及 55 个 worker mock/清理测试；构建与 package check 通过。原生 GUI 测试明确跳过，本次没有启动显示、驱动实际桌面或停止任何 live worker。
+
+公开 registry 的固定版本安装/类型与测试检查通过；另将独立副本的开发依赖临时指向新 DSH checkout 的构建产物，Host/Client typecheck 及全部 118 个 JS 测试也通过，交付 manifest/lockfile 不含本机 link。兼容核对涵盖 tools、session、subprocess、sandboxPolicy、attachment、Connection admission、webServer 路由、sidebarRightTabs/slots 及 browser module-table 入口。新增 16 个真实 Cordis 注册测试使用窄服务替身，验证两个受限权限拒绝全部六类写操作、每次调用读取当前 session policy、只读状态不启动 worker，以及缺少 cwd/取消时的拒绝。Host/Client 生产源码与 Python worker 未改，重新构建的三个 lib 文件与 0.2.0 字节一致；原有 owner/epoch、人控令牌/租约、原子按键与有界 hold 逻辑保持不变。
+
+以下 GUI 实测属于旧 DSH 基线，不应读作 DSH 0.2.0-rc.2 的新 GUI 验收；升级后的真实 profile/浏览器验收须在用户保存工作并完成受控切换后单独进行。
+
+## 原生 GUI 实测环境（历史基线）
 
 DSH 0.1.7-rc.2、Ubuntu 24.04 amd64、系统 Python 3.12、X11 用户桌面。图形基线为软件渲染，不以宿主 NVIDIA/CUDA 可见推断 GUI 或编码硬件加速。
 
